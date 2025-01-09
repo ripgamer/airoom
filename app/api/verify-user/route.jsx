@@ -1,7 +1,8 @@
+// app/api/verify-user/route.js
 import { NextResponse } from "next/server";
-import { db } from "@/config/db"; // Ensure correct path to your DB config
-import { Users } from "@/config/schema"; // Ensure correct schema import
-import { eq } from "drizzle-orm"; // Import the `eq` function
+import { db } from "@/config/db";
+import { Users } from "@/config/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req) {
     try {
@@ -11,13 +12,16 @@ export async function POST(req) {
             return NextResponse.json({ error: "User data is missing." }, { status: 400 });
         }
 
+        // Add debug logging
+        console.log("Processing user:", user);
+
         // Check if the user exists
         const userInfo = await db
             .select()
             .from(Users)
             .where(eq(Users.email, user.primaryEmailAddress.emailAddress));
 
-        console.log("User Info:", userInfo);
+        console.log("Query result:", userInfo);
 
         if (!userInfo?.length) {
             // Insert new user if not found
@@ -30,13 +34,22 @@ export async function POST(req) {
                 })
                 .returning();
 
-            return NextResponse.json({ result: saveResult[0] }, { status: 201 });
+            console.log("New user created:", saveResult[0]);
+            return NextResponse.json({ result: saveResult[0].Users }, { status: 201 });
         }
 
         // Return existing user info
         return NextResponse.json({ result: userInfo[0] }, { status: 200 });
     } catch (e) {
-        console.error("Error in POST /api/verify-user:", e);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        // Enhanced error logging
+        console.error("API Error Details:", {
+            message: e.message,
+            stack: e.stack,
+            name: e.name
+        });
+        return NextResponse.json({ 
+            error: "Internal Server Error", 
+            details: e.message 
+        }, { status: 500 });
     }
 }

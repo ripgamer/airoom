@@ -1,10 +1,9 @@
-import 'dotenv/config';
-import { defineConfig } from 'drizzle-kit';
-
-export default defineConfig({
+// drizzle.config.js
+export default {
   schema: './config/schema.js',
-  dialect: 'postgresql',
+  out: './drizzle',
+  driver: 'pg',
   dbCredentials: {
-    url: 'postgresql://airoom_owner:0adlcZE1xWJY@ep-restless-glade-a1c2zuzb.ap-southeast-1.aws.neon.tech/airoom?sslmode=require',
+      connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
   },
-});
+};
